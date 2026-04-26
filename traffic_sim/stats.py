@@ -42,6 +42,8 @@ class Tracker:
         print("EE5150 FINAL SIMULATION REPORT")
         print("="*45)
         print(f"Total Duration: {self.total_ticks} ticks")
+        print(f"Cars Spawned:   {self.spawned}")  # Added
+        print(f"Cars Exited:    {self.exited}")   # Added
         print(f"Throughput:     {self.exited / self.total_ticks:.2f} cars/tick")
         
         if self.exited > 0:
