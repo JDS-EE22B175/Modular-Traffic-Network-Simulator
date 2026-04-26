@@ -1,4 +1,4 @@
-from traffic_sim.engine_poisson import Engine
+from traffic_sim.engine import Engine
 from traffic_sim.visualizer import Visualizer
 
 def main():
