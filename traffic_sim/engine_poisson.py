@@ -57,17 +57,18 @@ class Engine:
                     v = road.waiting_queue.pop(0)
                     self.active_vehicles.remove(v)
                     total_time = self.current_tick - v.start_time
-                    self.tracker.record_exit(total_time, v.driving_time, v.waiting_time)
+                    # passing destination to tracker for destination-specific stats
+                    self.tracker.record_exit(total_time, v.driving_time, v.waiting_time, v.dest)
 
         # process intersections
         for j in self.junctions.values():
             j.tick(self.roads)
 
-        # update cars on the roads
+        # update movement of cars on all roads
         for r in self.roads.values():
             r.tick(self.tracker)
 
-        # spawn new cars using poisson distribution for bursts
+        # spawn new cars using poisson distribution for traffic bursts
         for src_id, rate in self.sources.items():
             arrivals = np.random.poisson(rate)
             
@@ -78,7 +79,7 @@ class Engine:
                 
                 start_road = self.roads[out_edges[0]]
                 
-                # FIXED: Called get_total_vehicles() instead of total_vehicles()
+                # check capacity for every vehicle in the poisson burst
                 if start_road.get_total_vehicles() < start_road.capacity:
                     dest_id = random.choice(self.sinks)
                     path = self.get_route(src_id, dest_id)
@@ -93,4 +94,4 @@ class Engine:
                         start_road.traveling_vehicles.append(v)
                         self.tracker.record_spawn()
                 else:
-                    break # entrance is jammed
+                    break # entry road is at max capacity

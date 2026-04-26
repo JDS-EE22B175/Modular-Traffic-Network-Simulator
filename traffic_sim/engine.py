@@ -47,7 +47,7 @@ class Engine:
         self.current_tick += 1
         self.tracker.total_ticks = self.current_tick
 
-        # clear sinks first to free up space
+        # process sinks: remove cars that reached the end
         for sink_id in self.sinks:
             in_edges = [f"{u}->{sink_id}" for u, v in self.graph.in_edges(sink_id)]
             for r_id in in_edges:
@@ -56,13 +56,14 @@ class Engine:
                     v = road.waiting_queue.pop(0)
                     self.active_vehicles.remove(v)
                     total_time = self.current_tick - v.start_time
-                    self.tracker.record_exit(total_time, v.driving_time, v.waiting_time)
+                    # passing destination to tracker for destination-specific stats
+                    self.tracker.record_exit(total_time, v.driving_time, v.waiting_time, v.dest)
 
         # process intersections
         for j in self.junctions.values():
             j.tick(self.roads)
 
-        # update cars on the roads
+        # update movement of cars on all roads
         for r in self.roads.values():
             r.tick(self.tracker)
 
@@ -75,8 +76,8 @@ class Engine:
                 
                 start_road = self.roads[out_edges[0]]
                 
-                # only spawn if there's room on the entry road
-                if start_road.total_vehicles() < start_road.capacity:
+                # check if the entry road has enough capacity
+                if start_road.get_total_vehicles() < start_road.capacity:
                     dest_id = random.choice(self.sinks)
                     path = self.get_route(src_id, dest_id)
                     
